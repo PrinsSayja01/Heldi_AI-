@@ -9,6 +9,10 @@ load_dotenv(ROOT / ".env")
 APP_HOST = os.getenv("APP_HOST", "127.0.0.1")
 APP_PORT = int(os.getenv("APP_PORT", "8787"))
 DB_PATH = os.getenv("DATABASE_PATH", str(ROOT / "data" / "heidi_leads.db"))
+DATABASE_URL = os.getenv("DATABASE_URL", "").strip()
+ENVIRONMENT = os.getenv("ENVIRONMENT", "local").strip().lower()
+IS_PRODUCTION = ENVIRONMENT in ("production", "prod")
+CORS_ORIGINS = [x.strip().rstrip("/") for x in os.getenv("CORS_ORIGINS", "http://127.0.0.1:8787,http://localhost:8787").split(",") if x.strip()]
 
 # AI Provider Configuration
 AI_PROVIDER = os.getenv("AI_PROVIDER", "auto").strip().lower() # 'auto', 'groq', 'ollama'
@@ -27,6 +31,13 @@ OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "qwen2.5:0.5b").strip()
 OLLAMA_TIMEOUT_SECONDS = int(os.getenv("OLLAMA_TIMEOUT_SECONDS", "150"))
 
 SERPER_API_KEY = os.getenv("SERPER_API_KEY", "").strip()
+SUPABASE_URL = os.getenv("SUPABASE_URL", "").strip().rstrip("/")
+SUPABASE_ANON_KEY = os.getenv("SUPABASE_ANON_KEY", "").strip()
+SUPABASE_JWT_SECRET = os.getenv("SUPABASE_JWT_SECRET", "").strip()
+REDIS_URL = os.getenv("REDIS_URL", "").strip().rstrip("/")
+REDIS_TOKEN = os.getenv("REDIS_TOKEN", "").strip()
+QUEUE_KEY = os.getenv("QUEUE_KEY", "heidi:research:jobs").strip()
+BACKEND_API_URL = os.getenv("BACKEND_API_URL", "").strip().rstrip("/")
 MAX_PAGES_PER_COMPANY = max(1, min(int(os.getenv("MAX_PAGES_PER_COMPANY", "4")), 6))
 REQUEST_TIMEOUT_SECONDS = max(5, min(int(os.getenv("REQUEST_TIMEOUT_SECONDS", "12")), 30))
 CRAWL_DELAY_SECONDS = max(0.2, min(float(os.getenv("CRAWL_DELAY_SECONDS", "0.6")), 3.0))

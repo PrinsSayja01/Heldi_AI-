@@ -66,13 +66,14 @@ def get_ai_status() -> dict:
     # Check Ollama tags for models
     ollama_online = False
     ollama_models = []
-    try:
-        r = requests.get(f"{config.OLLAMA_BASE_URL}/api/tags", timeout=2)
-        if r.status_code == 200:
-            ollama_online = True
-            ollama_models = [m.get("name") for m in r.json().get("models", []) if m.get("name")]
-    except Exception:
-        ollama_online = False
+    if not config.IS_PRODUCTION:
+        try:
+            r = requests.get(f"{config.OLLAMA_BASE_URL}/api/tags", timeout=2)
+            if r.status_code == 200:
+                ollama_online = True
+                ollama_models = [m.get("name") for m in r.json().get("models", []) if m.get("name")]
+        except Exception:
+            ollama_online = False
 
     return {
         "online": ollama_online,  # legacy compatibility
@@ -207,6 +208,8 @@ def call_groq_chat(messages: list[dict], temperature: float = 0.1, json_format: 
 
 def call_ollama_chat(messages: list[dict], temperature: float = 0.1, json_format: bool = True, timeout: int | None = None, model: str | None = None) -> dict:
     """Executes a chat completion against local Ollama."""
+    if config.IS_PRODUCTION:
+        raise RuntimeError("Local Ollama is disabled in production; configure GroqCloud or a cloud fallback.")
     TELEMETRY["ollama"]["requests"] += 1
     t0 = time.time()
     effective_timeout = timeout or config.OLLAMA_TIMEOUT_SECONDS
@@ -282,11 +285,15 @@ def complete_chat(messages: list[dict], temperature: float = 0.1, json_format: b
     except PermissionError as p_err:
         # Authentication error (invalid key) -> log and fallback if enabled
         if config.AI_FALLBACK_ENABLED:
+            if config.IS_PRODUCTION:
+                raise RuntimeError("GroqCloud authentication failed and no cloud AI fallback is configured.") from p_err
             record_fallback("groq", "ollama", f"Auth failure: {str(p_err)}")
             return call_ollama_chat(messages, temperature=temperature, json_format=json_format, timeout=timeout)
         raise
     except Exception as exc:
         if config.AI_FALLBACK_ENABLED:
+            if config.IS_PRODUCTION:
+                raise RuntimeError("GroqCloud is unavailable and no cloud AI fallback is configured.") from exc
             record_fallback("groq", "ollama", str(exc))
             return call_ollama_chat(messages, temperature=temperature, json_format=json_format, timeout=timeout)
         raise

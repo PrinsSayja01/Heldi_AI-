@@ -8,6 +8,20 @@
   <link rel="stylesheet" href="/static/styles.css" />
 </head>
 <body>
+<section class="auth-gate" id="authGate" hidden>
+  <div class="auth-card">
+    <div class="brand-mark">H<span>+</span></div>
+    <div class="eyebrow">COMPANYATLAS / SECURE ACCESS</div>
+    <h1>Sign in to your workspace</h1>
+    <p>Lead intelligence and research data are available to authenticated team members.</p>
+    <form id="loginForm">
+      <label class="field"><span>Email</span><input id="loginEmail" type="email" autocomplete="username" required /></label>
+      <label class="field"><span>Password</span><input id="loginPassword" type="password" autocomplete="current-password" required /></label>
+      <button class="button button-primary" type="submit">Sign in</button>
+      <div class="auth-error" id="loginError" role="alert"></div>
+    </form>
+  </div>
+</section>
 <div class="app-shell">
   <aside class="sidebar">
     <div class="brand-lockup">
@@ -23,11 +37,11 @@
     </nav>
     <div class="sidebar-bottom">
       <div class="local-card">
-        <div class="local-card-top"><span class="pulse-dot" id="sidebarOllamaDot"></span><span>LOCAL MODEL</span><span class="local-status" id="sidebarOllamaStatus">Checking</span></div>
+        <div class="local-card-top"><span class="pulse-dot" id="sidebarOllamaDot"></span><span>AI PROVIDER</span><span class="local-status" id="sidebarOllamaStatus">Checking</span></div>
         <div class="model-name" id="sidebarModel">qwen3:8b</div>
-        <div class="local-caption">Inference stays on this device.</div>
+        <div class="local-caption">Provider status is checked server-side.</div>
       </div>
-      <div class="sidebar-foot"><span class="shield">◇</span> Private workspace · Local database</div>
+      <div class="sidebar-foot"><span class="shield">◇</span> Authenticated workspace · Managed database</div>
     </div>
   </aside>
 
@@ -46,7 +60,7 @@
         <div><div class="eyebrow">PROSPECT INTELLIGENCE / 01</div><h1>Good morning, Prins<span class="heading-dot">.</span></h1><p class="subheading">A live view of your property-management opportunity pipeline.</p></div>
         <button class="button button-primary" data-goto="research"><span>＋</span> Run new research</button>
       </div>
-      <div class="notice-strip" id="modelNotice"><span class="notice-icon">◉</span><span>Checking local model connection…</span><button class="text-button" data-goto="settings">Model settings →</button></div>
+      <div class="notice-strip" id="modelNotice"><span class="notice-icon">◉</span><span>Checking production AI provider…</span><button class="text-button" data-goto="settings">Provider settings →</button></div>
       <div class="section-row"><div><h2>Pipeline snapshot</h2><p class="section-sub" id="snapshotSub">Berlin market · Seed dataset from 06 Nov 2026</p></div><button class="button button-quiet" id="refreshDashboard">↻ Refresh</button></div>
       <div class="metric-grid">
         <div class="metric-card"><div class="metric-top"><span class="metric-label">TOTAL PROSPECTS</span><span class="metric-icon blue">▤</span></div><div class="metric-value" id="statTotal">—</div><div class="metric-foot"><span class="metric-note">Companies in this city</span></div></div>
@@ -160,13 +174,13 @@
             <label class="field"><span>Maximum companies</span><select id="maxCompanies"><option value="8">8 prospects</option><option value="12" selected>12 prospects</option><option value="20">20 prospects</option><option value="30">30 prospects</option><option value="50">50 prospects</option></select></label>
             <label class="field"><span>Search language</span><select id="searchLanguage"><option value="auto" selected>Auto by country</option><option value="de">German</option><option value="en">English</option></select></label>
           </div>
-          <div class="model-toggle-row"><div class="toggle-copy"><b>Use local AI enrichment</b><p>Analyze company pages with Ollama on this machine. No cloud LLM is used.</p></div><label class="switch"><input type="checkbox" id="useLocalModel" checked /><span class="slider"></span></label></div>
+          <div class="model-toggle-row"><div class="toggle-copy"><b>Use AI enrichment</b><p>Production uses the configured cloud provider. Local Ollama is available only during local development.</p></div><label class="switch"><input type="checkbox" id="useLocalModel" checked /><span class="slider"></span></label></div>
           <div class="form-bottom"><div class="search-source-label"><span class="source-dot"></span><span id="searchSourceText">Public web search · DDGS metasearch</span></div><button class="button button-primary button-run" id="startResearch">Start research <span>→</span></button></div>
           <p class="form-disclaimer">Research is limited to public company pages and public professional contact details. LinkedIn profiles are not scraped.</p>
         </div>
         <div class="research-right">
-          <div class="panel run-panel" id="runPanel"><div class="run-empty"><div class="run-empty-icon">⌕</div><h3>Ready to discover</h3><p>Set your target city and launch a research run. Results will be saved to your local database and added to the lead explorer.</p><div class="run-steps"><div><i>01</i>Discover domains</div><div><i>02</i>Review official websites</div><div><i>03</i>Extract evidence locally</div><div><i>04</i>Score and save leads</div></div></div></div>
-          <div class="panel model-card"><div class="model-card-head"><span class="model-orb">◉</span><div><b>Local AI runtime</b><p>Ollama connection</p></div><span class="runtime-status" id="runtimeStatus">Checking</span></div><div class="runtime-model" id="runtimeModel">qwen3:8b</div><p class="runtime-copy" id="runtimeCopy">Checking your local Ollama service…</p><button class="text-button" data-goto="settings">Configure model →</button></div>
+          <div class="panel run-panel" id="runPanel"><div class="run-empty"><div class="run-empty-icon">⌕</div><h3>Ready to discover</h3><p>Set your target city and launch a research run. Results will be saved to the authenticated managed database and added to the lead explorer.</p><div class="run-steps"><div><i>01</i>Discover domains</div><div><i>02</i>Review official websites</div><div><i>03</i>Extract evidence</div><div><i>04</i>Score and save leads</div></div></div></div>
+          <div class="panel model-card"><div class="model-card-head"><span class="model-orb">◉</span><div><b>Production AI runtime</b><p>Cloud provider connection</p></div><span class="runtime-status" id="runtimeStatus">Checking</span></div><div class="runtime-model" id="runtimeModel">GroqCloud</div><p class="runtime-copy" id="runtimeCopy">Checking the configured backend provider…</p><button class="text-button" data-goto="settings">Configure provider →</button></div>
           <div class="panel guardrail-card"><div class="guardrail-icon">◇</div><div><b>Evidence-first qualification</b><p>Missing portfolio size or a named decision maker lowers data completeness. The agent never invents these fields.</p></div></div>
         </div>
       </div>
@@ -333,6 +347,7 @@
   </div>
 </div>
 <div class="toast" id="toast"></div>
+<script src="/api/config"></script>
 <script src="/static/app.js"></script>
 </body>
 </html>

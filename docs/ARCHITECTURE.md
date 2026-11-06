@@ -97,3 +97,14 @@ The system discovers property managers (`Hausverwaltungen`), retrieves public co
 - **Excel (.xlsx)**: 5 styled tabs (`Leads`, `Evidence`, `Scoring`, `Research Runs`, `Read Me`) with frozen header rows, auto-filtered tables, right-aligned numeric data, and full rubric documentation.
 - **CSV & JSON**: Standard UTF-8 encoded exports.
 - **Importer**: Multi-format column normalizer, duplicate detection against existing SQLite records, preview modal, and transaction-safe commitment.
+
+## Production Deployment
+
+Vercel serves the static frontend and `/api/config.js` only. The FastAPI API and research worker run on a persistent backend host using `render.yaml`; they must not run as Vercel background threads.
+
+- **Database:** local SQLite remains available for development/tests. Production uses `DATABASE_URL` with Supabase Postgres through `app/postgres.py`.
+- **Authentication:** Supabase Auth issues bearer JWTs. Production API routes require a verified JWT; health, login and configuration discovery are public.
+- **Queue:** `app/queue.py` enqueues research requests in Upstash Redis. `app/worker.py` consumes jobs and calls the existing research engine with retry/error persistence.
+- **AI:** production uses GroqCloud server-side. Local Ollama is disabled in production and remains a development fallback only.
+- **CORS:** production origins are explicit through `CORS_ORIGINS`; wildcard credentialed CORS is not used.
+- **Migration:** seed/import migration must run against the managed database before enabling production traffic. The local SQLite file is never used as production state.

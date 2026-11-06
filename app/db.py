@@ -11,6 +11,9 @@ def now_iso() -> str:
 
 
 def connect() -> sqlite3.Connection:
+    if config.DATABASE_URL:
+        from .postgres import Connection
+        return Connection(config.DATABASE_URL)
     Path(config.DB_PATH).parent.mkdir(parents=True, exist_ok=True)
     conn = sqlite3.connect(config.DB_PATH, timeout=30, check_same_thread=False)
     conn.row_factory = sqlite3.Row

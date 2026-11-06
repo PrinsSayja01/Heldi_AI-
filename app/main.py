@@ -2,9 +2,10 @@ from __future__ import annotations
 import csv, io, json, threading, uuid
 from pathlib import Path
 from urllib.parse import urlparse
-from fastapi import FastAPI, BackgroundTasks, HTTPException, Query, UploadFile, File
-from fastapi.responses import FileResponse, StreamingResponse
+from fastapi import FastAPI, BackgroundTasks, HTTPException, Query, UploadFile, File, Request
+from fastapi.responses import FileResponse, StreamingResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from . import config, db
 from .ollama import ollama_status, test_ollama_prompt, test_groq_prompt
@@ -12,9 +13,23 @@ from .ai_router import get_ai_status
 from .research import run_research, cancel_job
 from .export_xlsx import generate_leads_workbook
 from .importer import preview_import, commit_import
+from .auth import require_user, login as supabase_login
+from .queue import enqueue, QueueUnavailable
 
 app=FastAPI(title="Heidi Lead Intelligence Agent",version="1.0.0",description="Local-first, city-configurable B2B prospect research")
 app.mount("/static",StaticFiles(directory=str(config.STATIC_PATH)),name="static")
+app.add_middleware(CORSMiddleware, allow_origins=config.CORS_ORIGINS, allow_credentials=True, allow_methods=["GET", "POST", "PATCH", "PUT", "OPTIONS"], allow_headers=["Authorization", "Content-Type"])
+
+
+@app.middleware("http")
+async def production_authentication(request, call_next):
+    public = {"/api/health", "/api/auth/login", "/api/auth/config"}
+    if config.IS_PRODUCTION and request.url.path.startswith("/api/") and request.url.path not in public:
+        try:
+            request.state.user = require_user(request)
+        except HTTPException as exc:
+            return JSONResponse({"detail": exc.detail}, status_code=exc.status_code)
+    return await call_next(request)
 
 
 class ResearchRequest(BaseModel):
@@ -30,6 +45,10 @@ class SettingsPatch(BaseModel):
     ollama_base_url: str | None = Field(default=None, max_length=240)
     ollama_model: str | None = Field(default=None, min_length=1, max_length=120)
     ai_fallback_enabled: bool | None = None
+
+class LoginRequest(BaseModel):
+    email: str = Field(min_length=3, max_length=320)
+    password: str = Field(min_length=1, max_length=200)
 
 class CommitImportRequest(BaseModel):
     items: list[dict]
@@ -79,9 +98,30 @@ def index():
 @app.get("/api/health")
 def health():
     ai = get_ai_status()
-    return {"status":"ok","version":app.version,"database":"connected","ai":ai,"ollama":ai["ollama"],
-            "search_provider":"Serper" if config.SERPER_API_KEY else "DDGS metasearch",
-            "seeded_berlin_leads":len(db.list_leads(city="Berlin",country="Germany",limit=2000))}
+    try:
+        with db.connect() as conn:
+            conn.execute("SELECT 1").fetchone()
+        database_status = "connected"
+    except Exception:
+        database_status = "unavailable"
+    queue_status = "configured" if config.REDIS_URL and config.REDIS_TOKEN else "not_configured"
+    overall = "ok" if database_status == "connected" and (not config.IS_PRODUCTION or queue_status == "configured") else "degraded"
+    seeded = len(db.list_leads(city="Berlin",country="Germany",limit=2000)) if database_status == "connected" else 0
+    return {"status":overall,"version":app.version,"database":database_status,"queue":queue_status,"ai":ai,"ollama":ai["ollama"],
+        "search_provider":"Serper" if config.SERPER_API_KEY else "DDGS metasearch",
+        "seeded_berlin_leads":seeded}
+
+@app.get("/api/auth/config")
+def auth_config():
+    return {"required": config.IS_PRODUCTION, "supabase_url": config.SUPABASE_URL, "supabase_anon_key": config.SUPABASE_ANON_KEY}
+
+@app.post("/api/auth/login")
+def auth_login(req: LoginRequest):
+    return supabase_login(req.email, req.password)
+
+@app.get("/api/auth/me")
+def auth_me(request: Request):
+    return require_user(request)
 
 @app.get("/api/settings")
 def settings():
@@ -153,8 +193,15 @@ def start_research(req: ResearchRequest):
     if not req.city.strip() or not req.country.strip(): raise HTTPException(400,"City and country are required")
     job_id=uuid.uuid4().hex[:12]
     db.create_job(job_id,req.city.strip(),req.country.strip(),req.max_companies)
-    thread=threading.Thread(target=run_research,args=(job_id,req.city.strip(),req.country.strip(),req.max_companies,req.keywords,req.use_local_model),daemon=True)
-    thread.start()
+    if config.IS_PRODUCTION:
+        try:
+            enqueue(job_id, req.city.strip(), req.country.strip(), req.max_companies, req.keywords, False)
+        except QueueUnavailable as exc:
+            db.update_job(job_id, status="failed", error=str(exc), finished_at=db.now_iso())
+            raise HTTPException(503, str(exc))
+    else:
+        thread=threading.Thread(target=run_research,args=(job_id,req.city.strip(),req.country.strip(),req.max_companies,req.keywords,req.use_local_model),daemon=True)
+        thread.start()
     return {"job_id":job_id,"status":"queued"}
 
 @app.get("/api/jobs")

@@ -7,3 +7,6 @@ python-multipart>=0.0.20,<1.0
 python-dotenv>=1.1,<2.0
 openpyxl>=3.1.2,<4.0
 pytest>=8.3,<10.0
+httpx2>=2.0,<3.0
+psycopg[binary]>=3.2,<4.0
+PyJWT>=2.9,<3.0

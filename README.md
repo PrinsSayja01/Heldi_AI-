@@ -126,6 +126,12 @@ Restart the app after editing `.env`. This API key is never sent to Ollama. Do n
 pytest -q
 ```
 
+## Production Deployment
+
+Vercel serves the authenticated static frontend. Deploy the FastAPI API and `python -m app.worker` from `render.yaml` (or an equivalent persistent host), then set `BACKEND_API_URL` in the Vercel project. Production requires Supabase Auth/Postgres, Upstash Redis, and GroqCloud configuration; it does not use SQLite, local Ollama, or in-process background threads.
+
+Required production variables are listed in `.env.example`. Configure them in the backend host and set `BACKEND_API_URL` in Vercel. Run the migration/import procedure against Postgres before opening the dashboard. The deployment is intentionally degraded, rather than silently unreliable, when the queue or authentication provider is not configured.
+
 ## API quick reference
 
 - `GET /api/health` - Ollama, search provider and database health

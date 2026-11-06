@@ -1,9 +1,12 @@
-const state = { city: localStorage.getItem('heidiCity') || 'Berlin', country: localStorage.getItem('heidiCountry') || 'Germany', leads: [], job: null, pollTimer: null, settings: null, cities: [] };
+const state = { city: localStorage.getItem('heidiCity') || 'Berlin', country: localStorage.getItem('heidiCountry') || 'Germany', leads: [], job: null, pollTimer: null, settings: null, cities: [], token: localStorage.getItem('heidiAccessToken') || '' };
 const $ = (id) => document.getElementById(id);
 const esc = (v='') => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const initials = (s='') => String(s).trim().split(/\s+/).slice(0,2).map(x=>x[0]||'').join('').toUpperCase() || 'CO';
 const fmt = n => Number(n||0).toLocaleString('en-US');
-const api = async (url, opts={}) => { const r=await fetch(url,{headers:{'Content-Type':'application/json',...(opts.headers||{})},...opts}); if(!r.ok){let msg=`Request failed (${r.status})`;try{const j=await r.json();msg=j.detail||msg}catch{};throw new Error(msg)}; return r.json(); };
+const api = async (url, opts={}) => { const target = `${window.HEIDI_API_BASE || ''}${url}`; const headers={'Content-Type':'application/json',...(opts.headers||{})}; if(state.token) headers.Authorization=`Bearer ${state.token}`; const r=await fetch(target,{...opts,headers}); if(!r.ok){let msg=`Request failed (${r.status})`;try{const j=await r.json();msg=j.detail||msg}catch{};if(r.status===401) showLogin();throw new Error(msg)}; return r.json(); };
+function showLogin(){if(!$('authGate'))return;$('authGate').hidden=false;document.querySelector('.app-shell')?.setAttribute('aria-hidden','true');}
+function hideLogin(){if(!$('authGate'))return;$('authGate').hidden=true;document.querySelector('.app-shell')?.removeAttribute('aria-hidden');}
+async function authenticate(){if(window.HEIDI_REQUIRE_AUTH!==true){hideLogin();return true}if(!state.token){showLogin();return false}try{await api('/api/auth/me');hideLogin();return true}catch{state.token='';localStorage.removeItem('heidiAccessToken');showLogin();return false}}
 let toastTimer;
 function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),2600)}
 function nav(page){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));$('page-'+page)?.classList.add('active');document.querySelectorAll('.nav-item').forEach(x=>x.classList.toggle('active',x.dataset.page===page));const names={overview:'Overview',leads:'Lead explorer',research:'New research',settings:'Model & settings'};$('crumbPage').textContent=names[page]||'Overview';if(page==='leads')loadLeads();if(page==='settings')loadSettings();}
@@ -416,6 +419,8 @@ $('commitImportBtn')?.addEventListener('click', async () => {
   }
 });
 
-async function init(){try{await loadRuntime();await loadDashboard();const s=await api('/api/settings');$('researchCity').value=state.city;$('researchCountry').value=state.country;}catch(e){console.error(e);toast(e.message)}}
+async function init(){try{if(!(await authenticate()))return;await loadRuntime();await loadDashboard();const s=await api('/api/settings');$('researchCity').value=state.city;$('researchCountry').value=state.country;}catch(e){console.error(e);toast(e.message)}}
 init();
 loadActivity();
+
+$('loginForm')?.addEventListener('submit',async event=>{event.preventDefault();$('loginError').textContent='';try{const result=await fetch(`${window.HEIDI_API_BASE||''}/api/auth/login`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:$('loginEmail').value,password:$('loginPassword').value})});if(!result.ok)throw new Error((await result.json()).detail||'Sign-in failed');const data=await result.json();state.token=data.access_token;localStorage.setItem('heidiAccessToken',state.token);hideLogin();await loadRuntime();await loadDashboard();await loadActivity();}catch(error){$('loginError').textContent=error.message;}});
