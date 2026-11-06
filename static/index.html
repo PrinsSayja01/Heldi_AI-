@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#101827" />
+  <title>Heidi Lead Intelligence Agent</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="brand-lockup">
+      <div class="brand-mark">H<span>+</span></div>
+      <div><div class="brand-name">HEIDI <b>INTELLIGENCE</b></div><div class="brand-caption">LOCAL LEAD RESEARCH</div></div>
+    </div>
+    <div class="workspace-label">WORKSPACE</div>
+    <nav class="side-nav">
+      <button class="nav-item active" data-page="overview"><span class="nav-icon">◫</span> Overview</button>
+      <button class="nav-item" data-page="leads"><span class="nav-icon">▤</span> Lead explorer <span class="nav-count" id="navLeadCount">142</span></button>
+      <button class="nav-item" data-page="research"><span class="nav-icon">⌕</span> New research</button>
+      <button class="nav-item" data-page="settings"><span class="nav-icon">⚙</span> Model & settings</button>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="local-card">
+        <div class="local-card-top"><span class="pulse-dot" id="sidebarOllamaDot"></span><span>LOCAL MODEL</span><span class="local-status" id="sidebarOllamaStatus">Checking</span></div>
+        <div class="model-name" id="sidebarModel">qwen3:8b</div>
+        <div class="local-caption">Inference stays on this device.</div>
+      </div>
+      <div class="sidebar-foot"><span class="shield">◇</span> Private workspace · Local database</div>
+    </div>
+  </aside>
+
+  <main class="main-area">
+    <header class="topbar">
+      <div class="breadcrumb"><span>Workspace</span><i>/</i><b id="crumbPage">Overview</b></div>
+      <div class="top-actions">
+        <div class="location-control"><span class="pin">⌖</span><select id="citySwitcher" aria-label="Switch saved city"><option value="Berlin|Germany">Berlin, Germany</option></select></div>
+        <div class="top-divider"></div>
+        <div class="avatar">SP</div>
+      </div>
+    </header>
+
+    <section class="page active" id="page-overview">
+      <div class="page-heading">
+        <div><div class="eyebrow">PROSPECT INTELLIGENCE / 01</div><h1>Good morning, Prins<span class="heading-dot">.</span></h1><p class="subheading">A live view of your property-management opportunity pipeline.</p></div>
+        <button class="button button-primary" data-goto="research"><span>＋</span> Run new research</button>
+      </div>
+      <div class="notice-strip" id="modelNotice"><span class="notice-icon">◉</span><span>Checking local model connection…</span><button class="text-button" data-goto="settings">Model settings →</button></div>
+      <div class="section-row"><div><h2>Pipeline snapshot</h2><p class="section-sub" id="snapshotSub">Berlin market · Seed dataset from 06 Nov 2026</p></div><button class="button button-quiet" id="refreshDashboard">↻ Refresh</button></div>
+      <div class="metric-grid">
+        <div class="metric-card"><div class="metric-top"><span class="metric-label">TOTAL PROSPECTS</span><span class="metric-icon blue">▤</span></div><div class="metric-value" id="statTotal">—</div><div class="metric-foot"><span class="metric-note">Companies in this city</span></div></div>
+        <div class="metric-card"><div class="metric-top"><span class="metric-label">HIGH PRIORITY</span><span class="metric-icon green">↗</span></div><div class="metric-value" id="statTier1">—</div><div class="metric-foot"><span class="metric-note">Score of 80 or higher</span></div></div>
+        <div class="metric-card"><div class="metric-top"><span class="metric-label">NAMED CONTACTS</span><span class="metric-icon violet">♙</span></div><div class="metric-value" id="statContacts">—</div><div class="metric-foot"><span class="metric-note">Publicly identified people</span></div></div>
+        <div class="metric-card"><div class="metric-top"><span class="metric-label">BUSINESS EMAILS</span><span class="metric-icon amber">✉</span></div><div class="metric-value" id="statEmails">—</div><div class="metric-foot"><span class="metric-note">Published in public sources</span></div></div>
+      </div>
+      <div class="content-grid">
+        <div class="panel lead-panel">
+          <div class="panel-head"><div><h2>Priority prospects</h2><p class="section-sub">Highest-scoring leads in your current city</p></div><button class="text-button" data-goto="leads">View all leads →</button></div>
+          <div class="table-wrap"><table class="lead-table"><thead><tr><th>COMPANY</th><th>SERVICE FIT</th><th>CONTACT</th><th>FIT SCORE</th><th>STATUS</th></tr></thead><tbody id="priorityRows"><tr><td colspan="5" class="empty-state">Loading prospects…</td></tr></tbody></table></div>
+        </div>
+        <div class="panel side-panel">
+          <div class="panel-head"><div><h2>Lead quality</h2><p class="section-sub">Priority distribution</p></div><span class="tiny-tag">CURRENT CITY</span></div>
+          <div class="tier-bars" id="tierBars"></div>
+          <div class="divider-line"></div>
+          <div class="quick-stats"><div><span>Researched</span><b id="statResearched">—</b></div><div><span>Needs validation</span><b id="statNeedsValidation">—</b></div></div>
+          <div class="panel-callout"><span class="callout-icon">✦</span><div><b>Keep the evidence close</b><p>Every new lead stores the pages, snippets and facts used in its qualification score.</p></div></div>
+        </div>
+      </div>
+      <div class="bottom-grid">
+        <div class="panel compact-panel"><div class="panel-head"><div><h2>Research activity</h2><p class="section-sub">Recent local research runs</p></div><span class="activity-dot"></span></div><div id="recentActivity" class="activity-list"><div class="empty-copy">No new research runs yet. Start with a city and a target market.</div></div></div>
+        <div class="panel compact-panel next-step-panel"><div class="eyebrow">RECOMMENDED NEXT STEP</div><h3>Expand beyond Berlin</h3><p>Change the city, country and search terms to build a separate local prospect list for another market.</p><button class="button button-secondary" data-goto="research">Configure a new market <span>→</span></button></div>
+      </div>
+    </section>
+
+    <section class="page" id="page-leads">
+      <div class="page-heading compact-heading">
+        <div>
+          <div class="eyebrow">PIPELINE / 02</div>
+          <h1>Lead explorer<span class="heading-dot">.</span></h1>
+          <p class="subheading">Review companies, source evidence and qualification gaps.</p>
+        </div>
+        <div class="header-action-group">
+          <button class="button button-quiet" id="openImportBtn">↑ Import data</button>
+          <a class="button button-secondary" id="exportCsvBtn" href="/api/export.csv?city=Berlin&country=Germany">↓ CSV</a>
+          <a class="button button-primary" id="exportXlsxBtn" href="/api/export.xlsx?city=Berlin&country=Germany">↓ Excel (.xlsx)</a>
+          <a class="button button-quiet" id="exportJsonBtn" href="/api/export.json?city=Berlin&country=Germany" target="_blank">JSON</a>
+        </div>
+      </div>
+      <div class="filter-row">
+        <div class="search-input"><span>⌕</span><input id="leadSearch" placeholder="Search companies, domains, contacts…" /></div>
+        <select id="tierFilter">
+          <option value="">All tiers</option>
+          <option>Tier 1</option>
+          <option>Tier 2</option>
+          <option>Tier 3</option>
+        </select>
+        <select id="serviceFilter">
+          <option value="">All services</option>
+          <option value="weg">WEG management</option>
+          <option value="rental">Rental management</option>
+          <option value="special">Special management (SEV)</option>
+        </select>
+        <select id="contactFilter">
+          <option value="">All contact types</option>
+          <option value="named">Named contact</option>
+          <option value="email">Direct email</option>
+          <option value="phone">Phone available</option>
+        </select>
+        <select id="statusFilter">
+          <option value="">All statuses</option>
+          <option>New</option>
+          <option>Qualified</option>
+          <option>Contacted</option>
+          <option>Meeting</option>
+          <option>Not a fit</option>
+          <option>Seeded</option>
+        </select>
+        <div class="result-count" id="leadCount">0 leads</div>
+      </div>
+      <div class="panel explorer-panel">
+        <div class="table-wrap">
+          <table class="lead-table explorer-table">
+            <thead>
+              <tr>
+                <th>COMPANY</th>
+                <th>LOCATION</th>
+                <th>SERVICES</th>
+                <th>CONTACT</th>
+                <th>FIT SCORE</th>
+                <th>CONFIDENCE</th>
+                <th>STATUS</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="allLeadRows">
+              <tr><td colspan="8" class="empty-state">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="table-footer">
+          <span id="tableFooterText">Showing leads</span>
+          <span class="muted">Select a company to inspect its evidence →</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="page" id="page-research">
+      <div class="page-heading compact-heading"><div><div class="eyebrow">DISCOVERY ENGINE / 03</div><h1>New research<span class="heading-dot">.</span></h1><p class="subheading">Choose a city and run a real public-source discovery workflow.</p></div><div class="engine-badge"><span class="pulse-dot"></span> MULTI-STEP RESEARCH ENGINE</div></div>
+      <div class="research-layout">
+        <div class="panel research-form-panel">
+          <div class="panel-title-row"><div class="panel-symbol">⌕</div><div><h2>Market definition</h2><p class="section-sub">The city and country can be changed for every run.</p></div></div>
+          <div class="form-grid">
+            <label class="field"><span>Target city</span><input id="researchCity" value="Berlin" placeholder="e.g. Frankfurt" /></label>
+            <label class="field"><span>Country</span><input id="researchCountry" value="Germany" placeholder="e.g. Germany" /></label>
+          </div>
+          <label class="field"><span>Target business type</span><input id="researchVertical" value="Property management companies" /></label>
+          <label class="field"><span>Search keywords <small>Comma separated</small></span><textarea id="researchKeywords" rows="3">Hausverwaltung, WEG-Verwaltung, Mietverwaltung, Immobilienverwaltung</textarea><small class="field-help">Use local terms. For example, “property management, residential management” for an English-speaking market.</small></label>
+          <div class="form-grid form-grid-bottom">
+            <label class="field"><span>Maximum companies</span><select id="maxCompanies"><option value="8">8 prospects</option><option value="12" selected>12 prospects</option><option value="20">20 prospects</option><option value="30">30 prospects</option><option value="50">50 prospects</option></select></label>
+            <label class="field"><span>Search language</span><select id="searchLanguage"><option value="auto" selected>Auto by country</option><option value="de">German</option><option value="en">English</option></select></label>
+          </div>
+          <div class="model-toggle-row"><div class="toggle-copy"><b>Use local AI enrichment</b><p>Analyze company pages with Ollama on this machine. No cloud LLM is used.</p></div><label class="switch"><input type="checkbox" id="useLocalModel" checked /><span class="slider"></span></label></div>
+          <div class="form-bottom"><div class="search-source-label"><span class="source-dot"></span><span id="searchSourceText">Public web search · DDGS metasearch</span></div><button class="button button-primary button-run" id="startResearch">Start research <span>→</span></button></div>
+          <p class="form-disclaimer">Research is limited to public company pages and public professional contact details. LinkedIn profiles are not scraped.</p>
+        </div>
+        <div class="research-right">
+          <div class="panel run-panel" id="runPanel"><div class="run-empty"><div class="run-empty-icon">⌕</div><h3>Ready to discover</h3><p>Set your target city and launch a research run. Results will be saved to your local database and added to the lead explorer.</p><div class="run-steps"><div><i>01</i>Discover domains</div><div><i>02</i>Review official websites</div><div><i>03</i>Extract evidence locally</div><div><i>04</i>Score and save leads</div></div></div></div>
+          <div class="panel model-card"><div class="model-card-head"><span class="model-orb">◉</span><div><b>Local AI runtime</b><p>Ollama connection</p></div><span class="runtime-status" id="runtimeStatus">Checking</span></div><div class="runtime-model" id="runtimeModel">qwen3:8b</div><p class="runtime-copy" id="runtimeCopy">Checking your local Ollama service…</p><button class="text-button" data-goto="settings">Configure model →</button></div>
+          <div class="panel guardrail-card"><div class="guardrail-icon">◇</div><div><b>Evidence-first qualification</b><p>Missing portfolio size or a named decision maker lowers data completeness. The agent never invents these fields.</p></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="page" id="page-settings">
+      <div class="page-heading compact-heading">
+        <div>
+          <div class="eyebrow">RUNTIME / 04</div>
+          <h1>AI Provider & Settings<span class="heading-dot">.</span></h1>
+          <p class="subheading">Configure primary GroqCloud acceleration and automatic local Ollama fallback.</p>
+        </div>
+      </div>
+      <div class="settings-grid">
+        <div class="panel settings-panel">
+          <div class="panel-head">
+            <div>
+              <h2>AI Provider Routing</h2>
+              <p class="section-sub">Provider mode & automatic failover</p>
+            </div>
+            <span class="runtime-status" id="settingsRuntimeStatus">Checking</span>
+          </div>
+
+          <label class="field">
+            <span>Provider Mode</span>
+            <select id="aiProviderMode">
+              <option value="auto">Auto (Groq primary, Ollama fallback)</option>
+              <option value="groq">Groq Cloud only</option>
+              <option value="ollama">Ollama Local only</option>
+            </select>
+          </label>
+
+          <label class="checkbox-label" style="margin: 8px 0 14px;">
+            <input type="checkbox" id="aiFallbackEnabled" checked /> Enable automatic fallback on rate limit (429) or outage
+          </label>
+
+          <div style="border-top:1px solid #edf1f6; padding-top:14px; margin-top:6px;">
+            <div class="eyebrow" style="margin-bottom:8px;">PRIMARY PROVIDER: GROQCLOUD</div>
+            <label class="field">
+              <span>Groq API Key Status</span>
+              <input id="groqKeyStatus" value="Loading..." readonly style="background:#f9fafb; color:#53637e;" />
+            </label>
+            <label class="field">
+              <span>Groq Model</span>
+              <input id="groqModel" value="openai/gpt-oss-120b" />
+            </label>
+          </div>
+
+          <div style="border-top:1px solid #edf1f6; padding-top:14px; margin-top:10px;">
+            <div class="eyebrow" style="margin-bottom:8px;">FALLBACK PROVIDER: LOCAL OLLAMA</div>
+            <label class="field">
+              <span>Ollama Base URL</span>
+              <input id="ollamaUrl" value="http://127.0.0.1:11434" />
+            </label>
+            <label class="field">
+              <span>Ollama Model</span>
+              <div class="inline-field">
+                <select id="ollamaModel"><option value="qwen3:8b">qwen3:8b</option></select>
+                <button class="button button-quiet" id="refreshModels">↻</button>
+              </div>
+            </label>
+          </div>
+
+          <div class="settings-actions" style="margin-top:18px;">
+            <button class="button button-primary" id="saveSettings">Save AI Settings</button>
+            <button class="button button-secondary" id="testGroqBtn">Test Groq</button>
+            <button class="button button-secondary" id="testOllamaBtn">Test Ollama</button>
+          </div>
+          <div class="connection-result" id="connectionResult">AI provider connection has not been tested yet.</div>
+        </div>
+
+        <div class="panel settings-panel">
+          <div class="panel-head">
+            <div>
+              <h2>AI Telemetry & Usage</h2>
+              <p class="section-sub">Live requests, tokens, and failover monitoring</p>
+            </div>
+            <span class="tiny-tag">LIVE TELEMETRY</span>
+          </div>
+
+          <div id="aiTelemetryGrid" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px;">
+            <div class="metric-card" style="padding:10px;">
+              <span class="metric-label">GROQ REQUESTS</span>
+              <div class="metric-value" id="groqReqCount" style="font-size:20px;">0</div>
+              <span class="metric-note" id="groqTokens">0 tokens</span>
+            </div>
+            <div class="metric-card" style="padding:10px;">
+              <span class="metric-label">OLLAMA REQUESTS</span>
+              <div class="metric-value" id="ollamaReqCount" style="font-size:20px;">0</div>
+              <span class="metric-note" id="ollamaTokens">0 tokens</span>
+            </div>
+          </div>
+
+          <div style="margin-bottom:14px;">
+            <div class="eyebrow">FAILOVER EVENTS</div>
+            <div id="fallbackEventLog" style="background:#fcfdfe; border:1px solid #edf0f5; border-radius:6px; padding:10px; max-height:140px; overflow-y:auto; font-size:11px; color:#5b6980; margin-top:6px;">
+              No failover events recorded yet.
+            </div>
+          </div>
+
+          <div class="privacy-note">
+            <span>◇</span>
+            <div>
+              <b>Secure & Private Configuration</b>
+              <p>API keys are loaded exclusively from backend environment variables and are never transmitted to the browser or printed in logs.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="panel scoring-panel"><div class="panel-head"><div><h2>Qualification score logic</h2><p class="section-sub">Deterministic 100-point score. Evidence gaps stay visible.</p></div><span class="tiny-tag">VERSION 1.0</span></div><div class="score-logic"><div><b>35</b><span>Service fit</span><small>WEG, rental and special-property management</small></div><div><b>25</b><span>Portfolio scale</span><small>Only publicly stated unit counts</small></div><div><b>20</b><span>Contact quality</span><small>Named decision maker and business email</small></div><div><b>10</b><span>Metering signal</span><small>Remote reading, meters, billing and HKVO terms</small></div><div><b>10</b><span>Evidence quality</span><small>Official pages and matching source excerpts</small></div></div><p class="score-footnote">The score ranks public evidence, not purchase intent. Unknown data is not guessed. Check legal basis and outreach permissions before contacting any person.</p></div>
+    </section>
+
+    <footer class="app-footer"><span>HEIDI LEAD INTELLIGENCE AGENT · LOCAL BUILD 1.0</span><span>Public-source research · Human review required</span></footer>
+  </main>
+</div>
+
+<div class="drawer-backdrop" id="drawerBackdrop"></div>
+<aside class="lead-drawer" id="leadDrawer"><div class="drawer-head"><div><div class="eyebrow">LEAD PROFILE</div><h2 id="drawerCompany">Company</h2><p id="drawerDomain" class="section-sub"></p></div><button class="icon-button" id="closeDrawer">✕</button></div><div id="drawerContent" class="drawer-content"></div></aside>
+
+<!-- Import Modal -->
+<div class="modal-backdrop" id="importModalBackdrop"></div>
+<div class="modal-card-dialog" id="importModal">
+  <div class="modal-header">
+    <div>
+      <div class="eyebrow">DATA MANAGEMENT</div>
+      <h2>Import prospect dataset</h2>
+    </div>
+    <button class="icon-button" id="closeImportModal">✕</button>
+  </div>
+  <div class="modal-body">
+    <p class="modal-desc">Upload a CSV or JSON file containing property managers or lead records. Duplicates will be detected against your current city database.</p>
+    <div class="file-drop-area" id="fileDropArea">
+      <input type="file" id="importFileInput" accept=".csv,.json" style="display:none;" />
+      <div class="drop-icon">⇪</div>
+      <div class="drop-text">Click or drag a <b>.CSV</b> or <b>.JSON</b> file here</div>
+      <div class="drop-sub" id="selectedFileName">No file selected yet</div>
+    </div>
+    <div class="form-grid" style="margin-top:14px;">
+      <label class="field"><span>Target city</span><input id="importCity" value="Berlin" /></label>
+      <label class="field"><span>Target country</span><input id="importCountry" value="Germany" /></label>
+    </div>
+    <div id="importPreviewArea" style="display:none; margin-top:16px;">
+      <div class="preview-metrics">
+        <span class="preview-tag blue" id="previewTotal">0 rows</span>
+        <span class="preview-tag green" id="previewNew">0 new</span>
+        <span class="preview-tag amber" id="previewDupes">0 duplicates</span>
+      </div>
+      <div class="table-wrap preview-table-wrap">
+        <table class="lead-table">
+          <thead>
+            <tr><th>COMPANY</th><th>WEBSITE</th><th>SERVICES</th><th>STATUS</th></tr>
+          </thead>
+          <tbody id="previewRows"></tbody>
+        </table>
+      </div>
+      <label class="checkbox-label" style="margin-top:10px;">
+        <input type="checkbox" id="overwriteDupes" /> Overwrite existing duplicate records
+      </label>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="button button-quiet" id="cancelImportBtn">Cancel</button>
+    <button class="button button-primary" id="commitImportBtn" disabled>Commit import</button>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<script src="/static/app.js"></script>
+</body>
+</html>
