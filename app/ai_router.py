@@ -66,7 +66,7 @@ def get_ai_status() -> dict:
     # Check Ollama tags for models
     ollama_online = False
     ollama_models = []
-    if not config.IS_PRODUCTION:
+    if not config.IS_PRODUCTION and not config.IS_DEMO:
         try:
             r = requests.get(f"{config.OLLAMA_BASE_URL}/api/tags", timeout=2)
             if r.status_code == 200:
@@ -208,7 +208,7 @@ def call_groq_chat(messages: list[dict], temperature: float = 0.1, json_format: 
 
 def call_ollama_chat(messages: list[dict], temperature: float = 0.1, json_format: bool = True, timeout: int | None = None, model: str | None = None) -> dict:
     """Executes a chat completion against local Ollama."""
-    if config.IS_PRODUCTION:
+    if config.IS_PRODUCTION or config.IS_DEMO:
         raise RuntimeError("Local Ollama is disabled in production; configure GroqCloud or a cloud fallback.")
     TELEMETRY["ollama"]["requests"] += 1
     t0 = time.time()

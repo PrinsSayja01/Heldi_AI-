@@ -1,5 +1,6 @@
 body:has(.auth-gate:not([hidden])) .app-shell { display: none; }
 .auth-gate[hidden] { display: none; }
+.demo-banner { position: fixed; top: 0; left: 0; right: 0; z-index: 20; padding: 6px 12px; background: #e8f4ec; color: #23643a; font-size: 11px; text-align: center; border-bottom: 1px solid #cbe4d2; }
 .auth-gate { min-height: 100vh; display: grid; place-items: center; padding: 24px; background: #f3f6fa; }
 .auth-card { width: min(420px, 100%); padding: 34px; background: #fff; border: 1px solid #dfe6ef; box-shadow: 0 18px 50px rgba(16, 24, 39, .12); }
 .auth-card .brand-mark { margin-bottom: 24px; }

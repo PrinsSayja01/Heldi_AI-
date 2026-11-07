@@ -108,3 +108,9 @@ Vercel serves the static frontend and `/api/config.js` only. The FastAPI API and
 - **AI:** production uses GroqCloud server-side. Local Ollama is disabled in production and remains a development fallback only.
 - **CORS:** production origins are explicit through `CORS_ORIGINS`; wildcard credentialed CORS is not used.
 - **Migration:** seed/import migration must run against the managed database before enabling production traffic. The local SQLite file is never used as production state.
+
+## Single-Project Demo Mode
+
+The public CompanyAtlas demo uses one Vercel project and the native Python runtime. Root `index.py` exposes this FastAPI app directly; the app serves `/`, `/static/*`, and every `/api/*` route on the same origin. `ENVIRONMENT=demo` disables external database/auth/queue requirements, initializes SQLite at `/tmp/companyatlas-demo.db`, and imports the bundled `data/demo_seed.json` idempotently.
+
+The bundled dataset contains the verified local records: 152 Berlin leads and 11 Frankfurt leads. `/tmp` is ephemeral and may reset on a cold start. Demo research is synchronous, limited to two companies, and reports the actual completed job state; it does not use daemon threads or pretend to have a durable queue.

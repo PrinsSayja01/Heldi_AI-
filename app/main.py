@@ -193,6 +193,11 @@ def start_research(req: ResearchRequest):
     if not req.city.strip() or not req.country.strip(): raise HTTPException(400,"City and country are required")
     job_id=uuid.uuid4().hex[:12]
     db.create_job(job_id,req.city.strip(),req.country.strip(),req.max_companies)
+    if config.IS_DEMO:
+        if req.max_companies > 2:
+            raise HTTPException(400, "Demo research is limited to 2 companies per request.")
+        run_research(job_id, req.city.strip(), req.country.strip(), req.max_companies, req.keywords, False)
+        return {"job_id": job_id, "status": db.get_job(job_id).get("status")}
     if config.IS_PRODUCTION:
         try:
             enqueue(job_id, req.city.strip(), req.country.strip(), req.max_companies, req.keywords, False)

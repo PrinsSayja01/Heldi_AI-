@@ -1,0 +1,5 @@
+[project]
+name = "app"
+version = "0.1.0"
+dependencies = [ "fastapi>=0.115, <1.0", "uvicorn[standard]>=0.34, <1.0", "requests>=2.32, <3.0", "beautifulsoup4>=4.13, <5.0", "ddgs>=9.16, <10.0", "python-multipart>=0.0.20, <1.0", "python-dotenv>=1.1, <2.0", "openpyxl>=3.1.2, <4.0", "pytest>=8.3, <10.0", "httpx2>=2.0, <3.0", "psycopg[binary]>=3.2, <4.0", "pyjwt>=2.9, <3.0" ]
+requires-python = "~=3.12.0"

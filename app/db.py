@@ -87,7 +87,10 @@ def init_db() -> None:
           updated_at TEXT NOT NULL
         );
         """)
-    seed_berlin_if_empty()
+    if config.IS_DEMO:
+        seed_demo_if_empty()
+    else:
+        seed_berlin_if_empty()
 
 
 def _json(value: Any) -> str:
@@ -142,6 +145,17 @@ def seed_berlin_if_empty() -> None:
               f"Imported from the 06 Nov 2026 case-study workbook. Re-score uses the current 100-point framework; original workbook score ({original_score}) is preserved in the source record. Revalidate before outreach.",
               _json([]), _json(_seed_gaps(r)), _json(sources), _json({**r, "original_workbook_score": original_score, "score_breakdown": score_breakdown}), now_iso(), now_iso()
             ))
+
+
+def seed_demo_if_empty() -> None:
+    if not config.DEMO_SEED_PATH.exists():
+        return
+    with connect() as database:
+        if database.execute("SELECT COUNT(*) FROM leads").fetchone()[0]:
+            return
+        rows = json.loads(config.DEMO_SEED_PATH.read_text(encoding="utf-8"))
+        for row in rows:
+            upsert_lead(row)
 
 
 def _domain(url: str | None) -> str | None:

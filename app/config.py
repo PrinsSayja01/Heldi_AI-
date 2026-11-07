@@ -8,15 +8,16 @@ load_dotenv(ROOT / ".env")
 
 APP_HOST = os.getenv("APP_HOST", "127.0.0.1")
 APP_PORT = int(os.getenv("APP_PORT", "8787"))
-DB_PATH = os.getenv("DATABASE_PATH", str(ROOT / "data" / "heidi_leads.db"))
-DATABASE_URL = os.getenv("DATABASE_URL", "").strip()
 ENVIRONMENT = os.getenv("ENVIRONMENT", "local").strip().lower()
+IS_DEMO = ENVIRONMENT == "demo"
 IS_PRODUCTION = ENVIRONMENT in ("production", "prod")
+DB_PATH = os.getenv("DATABASE_PATH", "/tmp/companyatlas-demo.db" if IS_DEMO else str(ROOT / "data" / "heidi_leads.db"))
+DATABASE_URL = "" if IS_DEMO else os.getenv("DATABASE_URL", "").strip()
 CORS_ORIGINS = [x.strip().rstrip("/") for x in os.getenv("CORS_ORIGINS", "http://127.0.0.1:8787,http://localhost:8787").split(",") if x.strip()]
 
 # AI Provider Configuration
-AI_PROVIDER = os.getenv("AI_PROVIDER", "auto").strip().lower() # 'auto', 'groq', 'ollama'
-AI_FALLBACK_ENABLED = os.getenv("AI_FALLBACK_ENABLED", "true").strip().lower() in ("true", "1", "yes")
+AI_PROVIDER = os.getenv("AI_PROVIDER", "groq" if IS_DEMO else "auto").strip().lower() # 'auto', 'groq', 'ollama'
+AI_FALLBACK_ENABLED = os.getenv("AI_FALLBACK_ENABLED", "false" if IS_DEMO else "true").strip().lower() in ("true", "1", "yes")
 AI_FALLBACK_PROVIDER = os.getenv("AI_FALLBACK_PROVIDER", "ollama").strip().lower()
 
 # Primary Provider: Groq Cloud
@@ -42,4 +43,5 @@ MAX_PAGES_PER_COMPANY = max(1, min(int(os.getenv("MAX_PAGES_PER_COMPANY", "4")),
 REQUEST_TIMEOUT_SECONDS = max(5, min(int(os.getenv("REQUEST_TIMEOUT_SECONDS", "12")), 30))
 CRAWL_DELAY_SECONDS = max(0.2, min(float(os.getenv("CRAWL_DELAY_SECONDS", "0.6")), 3.0))
 SEED_PATH = ROOT / "data" / "berlin_seed.json"
+DEMO_SEED_PATH = ROOT / "data" / "demo_seed.json"
 STATIC_PATH = ROOT / "static"

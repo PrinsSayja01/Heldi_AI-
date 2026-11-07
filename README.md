@@ -126,11 +126,13 @@ Restart the app after editing `.env`. This API key is never sent to Ollama. Do n
 pytest -q
 ```
 
-## Production Deployment
+## Vercel Demo Deployment
 
-Vercel serves the authenticated static frontend. Deploy the FastAPI API and `python -m app.worker` from `render.yaml` (or an equivalent persistent host), then set `BACKEND_API_URL` in the Vercel project. Production requires Supabase Auth/Postgres, Upstash Redis, and GroqCloud configuration; it does not use SQLite, local Ollama, or in-process background threads.
+The public demo is a single Vercel project. Root `index.py` exposes the existing FastAPI app, and Vercel serves the frontend and API on the same origin. Set `ENVIRONMENT=demo`, use `/tmp/companyatlas-demo.db`, and bundle `data/demo_seed.json`; no external database, queue, auth service, or second host is required. `/tmp` is temporary and resets on a cold start, so this is not persistent cloud storage.
 
-Required production variables are listed in `.env.example`. Configure them in the backend host and set `BACKEND_API_URL` in Vercel. Run the migration/import procedure against Postgres before opening the dashboard. The deployment is intentionally degraded, rather than silently unreliable, when the queue or authentication provider is not configured.
+Groq is optional for the demo. When `GROQ_API_KEY` is unavailable or rate-limited, the existing deterministic rules-based extraction preserves retrieved facts without inventing AI output. Demo research is synchronous and limited to two companies per request to fit the serverless function duration.
+
+The managed Postgres/Auth/queue code and `render.yaml` remain as a future secured deployment option, but they are not required by `ENVIRONMENT=demo`.
 
 ## API quick reference
 
